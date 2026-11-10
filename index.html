@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>燭點 Candle Point | 沉穩安靜的微醺時光</title>
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 React 與 ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- 引入 Babel 讓瀏覽器可以編譯 JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        gold: {
+                            400: '#D4AF37', // 質感暗金色
+                            500: '#C5A028',
+                        },
+                        dark: {
+                            900: '#0a0a0a',
+                            800: '#171717',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0a0a0a;
+            color: #e5e5e5;
+            font-family: 'Helvetica Neue', Arial, 'LiHei Pro', '微軟正黑體', sans-serif;
+            overflow-x: hidden;
+        }
+        
+        /* 跑馬燈動畫 */
+        @keyframes marquee {
+            0% { transform: translateX(0%); }
+            100% { transform: translateX(-50%); }
+        }
+        .marquee-container {
+            overflow: hidden;
+            white-space: nowrap;
+            width: 100%;
+            background: linear-gradient(to right, #000 0%, #111 50%, #000 100%);
+            border-top: 1px solid #333;
+            border-bottom: 1px solid #333;
+            padding: 10px 0;
+        }
+        .marquee-content {
+            display: inline-block;
+            animation: marquee 25s linear infinite;
+            font-size: 0.9rem;
+            letter-spacing: 0.1em;
+            color: #D4AF37;
+        }
+        /* 隱藏滾動條但保留功能 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0a0a0a; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555; 
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // --- 共用 SVG Icons ---
+        const MenuIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>;
+        const XIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>;
+
+        // --- 元件：導覽列 ---
+        const Navbar = () => {
+            const [isOpen, setIsOpen] = useState(false);
+            const links = [
+                { name: '首頁', href: '#home' },
+                { name: '關於燭點', href: '#about' },
+                { name: '餐點與酒', href: '#menu' },
+                { name: '空間氛圍', href: '#gallery' },
+                { name: '預約訂位', href: '#reservation' },
+            ];
+
+            return (
+                <nav className="fixed w-full z-50 bg-dark-900/90 backdrop-blur-md border-b border-gray-800 transition-all">
+                    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="flex items-center justify-between h-20">
+                            <div className="flex-shrink-0">
+                                <a href="#home" className="text-2xl font-bold tracking-widest text-gold-400">
+                                    燭點
+                                </a>
+                            </div>
+                            <div className="hidden md:block">
+                                <div className="ml-10 flex items-baseline space-x-8">
+                                    {links.map((link) => (
+                                        <a key={link.name} href={link.href} className="text-gray-300 hover:text-gold-400 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                                            {link.name}
+                                        </a>
+                                    ))}
+                                </div>
+                            </div>
+                            <div className="md:hidden flex items-center">
+                                <button onClick={() => setIsOpen(!isOpen)} className="text-gray-300 hover:text-white focus:outline-none">
+                                    {isOpen ? <XIcon /> : <MenuIcon />}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {/* 手機版選單 */}
+                    {isOpen && (
+                        <div className="md:hidden bg-dark-800 absolute w-full border-b border-gray-700">
+                            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                                {links.map((link) => (
+                                    <a key={link.name} href={link.href} onClick={() => setIsOpen(false)} className="text-gray-300 hover:text-gold-400 block px-3 py-2 rounded-md text-base font-medium">
+                                        {link.name}
+                                    </a>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </nav>
+            );
+        };
+
+        // --- 元件：首頁主視覺 ---
+        const Hero = () => {
+            return (
+                <section id="home" className="relative h-screen flex flex-col justify-center items-center overflow-hidden">
+                    {/* 背景圖：深色調酒與光影示意 */}
+                    <div 
+                        className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-40"
+                        style={{ backgroundImage: "url('https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80')" }}
+                    ></div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-dark-900 via-transparent to-dark-900 z-10"></div>
+                    
+                    <div className="relative z-20 text-center px-4 mt-16">
+                        <h1 className="text-5xl md:text-7xl font-bold tracking-[0.2em] text-white mb-6">
+                            燭點 <span className="text-gold-400 text-4xl md:text-6xl">Candle Point</span>
+                        </h1>
+                        <p className="text-lg md:text-2xl text-gray-300 font-light tracking-widest mb-10">
+                            喧囂之外，留一盞微光與你深談。
+                        </p>
+                        <a href="#reservation" className="inline-block border border-gold-400 text-gold-400 hover:bg-gold-400 hover:text-dark-900 transition-all duration-300 px-8 py-3 tracking-widest text-sm uppercase">
+                            預約您的安靜時光
+                        </a>
+                    </div>
+
+                    {/* 動態跑馬燈 */}
+                    <div className="absolute bottom-0 w-full z-20">
+                        <div className="marquee-container">
+                            <div className="marquee-content">
+                                ✦ 燭點 Candle Point ✦ 高雄市三民區的隱秘角落 ✦ 享受寧靜的微醺時光 ✦ 為成熟靈魂準備的避風港 ✦ 黑暗中一點光 ✦ ✦ 燭點 Candle Point ✦ 高雄市三民區的隱秘角落 ✦ 享受寧靜的微醺時光 ✦ 為成熟靈魂準備的避風港 ✦ 黑暗中一點光 ✦
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            );
+        };
+
+        // --- 元件：關於品牌 ---
+        const About = () => (
+            <section id="about" className="py-24 bg-dark-900">
+                <div className="max-w-4xl mx-auto px-6 text-center">
+                    <h2 className="text-3xl font-bold text-gold-400 mb-8 tracking-widest">關於燭點</h2>
+                    <div className="w-12 h-[1px] bg-gold-400 mx-auto mb-8"></div>
+                    <p className="text-gray-300 leading-relaxed text-lg mb-6 text-justify md:text-center font-light">
+                        在節奏快速的城市裡，我們都需要一個能夠完全卸下防備的地方。<br className="hidden md:block"/>
+                        「燭點」拒絕年輕世代的喧嘩與浮躁，專為上班族與成熟靈魂打造。
+                    </p>
+                    <p className="text-gray-300 leading-relaxed text-lg text-justify md:text-center font-light">
+                        以極致的黑色系空間為畫布，只留下桌面上那一點溫暖的光源。<br className="hidden md:block"/>
+                        在這裡，沒有震耳欲聾的音樂，只有適合深談的氛圍、精緻的餐點，以及一杯懂得你今天辛勞的好酒。
+                    </p>
+                </div>
+            </section>
+        );
+
+        // --- 元件：菜單 ---
+        const Menu = () => {
+            const [activeTab, setActiveTab] = useState('主餐');
+            
+            const menuData = {
+                '主餐': [
+                    { name: '慢燉紅酒牛小排', price: 680, desc: '特選帶骨牛小排，紅酒慢熬8小時，肉質軟嫩入口即化。' },
+                    { name: '松露野菇牛肝菌燉飯', price: 420, desc: '義大利米吸飽濃郁菇香，佐以現刨黑松露。' },
+                    { name: '香煎鴨胸佐橙汁', price: 520, desc: '宜蘭櫻桃鴨胸，外皮酥脆，搭配特製酸甜橙汁醬。' }
+                ],
+                '甜點': [
+                    { name: '微醺提拉米蘇', price: 220, desc: '加入高濃度陳年蘭姆酒，大人的苦甜風味。' },
+                    { name: '熔岩黑巧克力', price: 250, desc: '72%黑巧克力製作，切開流出溫熱濃郁的巧克力漿。' },
+                    { name: '伯爵茶香巴斯克', price: 200, desc: '焦黑外皮帶有淡淡焦糖香，內餡綿密富含伯爵茶韻。' }
+                ],
+                '酒品': [
+                    { name: '燭點特調 (Candle Light)', price: 380, desc: '本店招牌。威士忌基底，帶有煙燻木質調與微弱柑橘香。' },
+                    { name: '寂靜之夜 (Silent Night)', price: 350, desc: '琴酒與紫蘇的結合，清爽透明，如夜風般安撫人心。' },
+                    { name: '經典古典 (Old Fashioned)', price: 320, desc: '忠於傳統的苦甜平衡，展現波本威士忌的純粹。' }
+                ]
+            };
+
+            return (
+                <section id="menu" className="py-24 bg-dark-800">
+                    <div className="max-w-5xl mx-auto px-6">
+                        <h2 className="text-3xl font-bold text-center text-gold-400 mb-12 tracking-widest">餐點與酒</h2>
+                        
+                        {/* 頁籤 */}
+                        <div className="flex justify-center space-x-4 md:space-x-12 mb-12 border-b border-gray-700 pb-4">
+                            {Object.keys(menuData).map(tab => (
+                                <button 
+                                    key={tab}
+                                    onClick={() => setActiveTab(tab)}
+                                    className={`text-lg tracking-widest pb-2 transition-colors ${activeTab === tab ? 'text-gold-400 border-b-2 border-gold-400' : 'text-gray-400 hover:text-gray-200'}`}
+                                >
+                                    {tab}
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* 菜單列表 */}
+                        <div className="grid md:grid-cols-2 gap-8">
+                            {menuData[activeTab].map((item, idx) => (
+                                <div key={idx} className="border-b border-gray-700 pb-4">
+                                    <div className="flex justify-between items-baseline mb-2">
+                                        <h3 className="text-xl text-gray-100 tracking-wide">{item.name}</h3>
+                                        <span className="text-gold-400 font-serif">NT$ {item.price}</span>
+                                    </div>
+                                    <p className="text-gray-400 text-sm font-light">{item.desc}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+            );
+        };
+
+        // --- 元件：圖庫 (Gallery) ---
+        const Gallery = () => {
+            const [selectedImg, setSelectedImg] = useState(null);
+            const images = [
+                { src: 'https://images.unsplash.com/photo-1574096079513-d8259312b785?w=800&q=80', alt: '暗色調的高質感吧台' },
+                { src: 'https://images.unsplash.com/photo-1544145945-f90425340c7e?w=800&q=80', alt: '威士忌調酒' },
+                { src: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&q=80', alt: '精緻法式擺盤主餐' },
+                { src: 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=800&q=80', alt: '沙發區一角與微光' },
+                { src: 'https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=800&q=80', alt: '經典調酒特寫' },
+                { src: 'https://images.unsplash.com/photo-1600891964092-4316c288032e?w=800&q=80', alt: '安靜的雙人座位' },
+            ];
+
+            return (
+                <section id="gallery" className="py-24 bg-dark-900">
+                    <div className="max-w-6xl mx-auto px-6">
+                        <h2 className="text-3xl font-bold text-center text-gold-400 mb-12 tracking-widest">空間氛圍</h2>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                            {images.map((img, idx) => (
+                                <div key={idx} className="aspect-square overflow-hidden cursor-pointer group" onClick={() => setSelectedImg(img.src)}>
+                                    <img 
+                                        src={img.src} 
+                                        alt={img.alt} 
+                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-70 group-hover:opacity-100"
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Lightbox Modal */}
+                    {selectedImg && (
+                        <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4" onClick={() => setSelectedImg(null)}>
+                            <button className="absolute top-8 right-8 text-gray-400 hover:text-white" onClick={() => setSelectedImg(null)}>
+                                <XIcon />
+                            </button>
+                            <img src={selectedImg} className="max-w-full max-h-[90vh] object-contain" alt="放大圖片" />
+                        </div>
+                    )}
+                </section>
+            );
+        };
+
+        // --- 元件：訂位表單 ---
+        const Reservation = () => {
+            const [status, setStatus] = useState('idle');
+            const [formData, setFormData] = useState({ name: '', phone: '', date: '', time: '', guests: '2' });
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                setStatus('success');
+            };
+
+            return (
+                <section id="reservation" className="py-24 bg-dark-800">
+                    <div className="max-w-3xl mx-auto px-6">
+                        <h2 className="text-3xl font-bold text-center text-gold-400 mb-4 tracking-widest">預約訂位</h2>
+                        <p className="text-center text-gray-400 mb-10 text-sm">※ 課堂展示表單，請勿填寫真實敏感個資</p>
+                        
+                        {status === 'success' ? (
+                            <div className="bg-dark-900 border border-gold-400/50 p-8 text-center rounded-sm">
+                                <h3 className="text-2xl text-gold-400 mb-4">預約申請已送出</h3>
+                                <p className="text-gray-300 mb-2">感謝 {formData.name} 先生/女士 的預約。</p>
+                                <p className="text-gray-400 text-sm">我們將為您保留 {formData.date} {formData.time} 供 {formData.guests} 位貴賓用餐的安靜席位。<br/>稍後將有專人與您聯繫確認。</p>
+                                <button onClick={() => setStatus('idle')} className="mt-8 text-gold-400 border border-gold-400 px-6 py-2 hover:bg-gold-400 hover:text-dark-900 transition-colors">
+                                    重新填寫
+                                </button>
+                            </div>
+                        ) : (
+                            <form onSubmit={handleSubmit} className="space-y-6">
+                                <div className="grid md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label className="block text-sm text-gray-400 mb-2">姓名 Name *</label>
+                                        <input required type="text" onChange={e=>setFormData({...formData, name: e.target.value})} className="w-full bg-dark-900 border border-gray-700 text-gray-200 px-4 py-3 focus:outline-none focus:border-gold-400" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm text-gray-400 mb-2">聯絡電話 Phone *</label>
+                                        <input required type="tel" onChange={e=>setFormData({...formData, phone: e.target.value})} className="w-full bg-dark-900 border border-gray-700 text-gray-200 px-4 py-3 focus:outline-none focus:border-gold-400" />
+                                    </div>
+                                </div>
+                                <div className="grid md:grid-cols-3 gap-6">
+                                    <div>
+                                        <label className="block text-sm text-gray-400 mb-2">用餐日期 Date *</label>
+                                        <input required type="date" min={new Date().toISOString().split('T')[0]} onChange={e=>setFormData({...formData, date: e.target.value})} className="w-full bg-dark-900 border border-gray-700 text-gray-200 px-4 py-3 focus:outline-none focus:border-gold-400" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm text-gray-400 mb-2">時間 Time *</label>
+                                        <select required onChange={e=>setFormData({...formData, time: e.target.value})} className="w-full bg-dark-900 border border-gray-700 text-gray-200 px-4 py-3 focus:outline-none focus:border-gold-400">
+                                            <option value="">選擇時間</option>
+                                            <option value="19:00">19:00</option>
+                                            <option value="20:00">20:00</option>
+                                            <option value="21:00">21:00</option>
+                                            <option value="22:00">22:00</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm text-gray-400 mb-2">人數 Guests *</label>
+                                        <select required onChange={e=>setFormData({...formData, guests: e.target.value})} className="w-full bg-dark-900 border border-gray-700 text-gray-200 px-4 py-3 focus:outline-none focus:border-gold-400">
+                                            <option value="1">1 人 (獨飲)</option>
+                                            <option value="2">2 人</option>
+                                            <option value="3">3 人</option>
+                                            <option value="4">4 人 (上限)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-sm text-gray-400 mb-2">特殊需求 (選填)</label>
+                                    <textarea rows="3" className="w-full bg-dark-900 border border-gray-700 text-gray-200 px-4 py-3 focus:outline-none focus:border-gold-400" placeholder="例如：慶祝結婚紀念日..."></textarea>
+                                </div>
+                                <div className="text-center pt-4">
+                                    <button type="submit" className="bg-gold-400 text-dark-900 px-10 py-3 font-medium tracking-widest hover:bg-gold-500 transition-colors w-full md:w-auto">
+                                        確認預約
+                                    </button>
+                                </div>
+                            </form>
+                        )}
+                    </div>
+                </section>
+            );
+        };
+
+        // --- 元件：地圖與頁尾 ---
+        const Footer = () => (
+            <footer className="bg-dark-900 border-t border-gray-800 pt-16 pb-8">
+                <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-12 mb-12">
+                    <div>
+                        <h3 className="text-xl text-gold-400 mb-6 tracking-widest">營業資訊</h3>
+                        <div className="space-y-4 text-gray-300 font-light">
+                            <p>📍 地址：高雄市三民區示範路 99 號</p>
+                            <p>📞 電話：(07) 123-4567</p>
+                            <p>🕒 時間：19:00 - 01:00 (週一、週二公休)</p>
+                            <p className="text-sm text-gray-500 mt-4 border-l-2 border-gray-600 pl-3">
+                                規範：為維持安靜交流空間，恕不接待 12 歲以下孩童，且每桌人數上限為 4 人。
+                            </p>
+                        </div>
+                    </div>
+                    <div className="h-64 md:h-auto bg-gray-800 w-full relative">
+                        {/* Google Maps 嵌入 (設定在高雄三民區市區) */}
+                        <iframe 
+                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d14729.071850123537!2d120.30230235!3d22.64376175!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x346e04f056d6d459%3A0xc391ff18d6e3c54!2z6auY6ZuE5biC5LiJ5rCR5Y2A!5e0!3m2!1szh-TW!2stw!4v1700000000000!5m2!1szh-TW!2stw" 
+                            className="absolute inset-0 w-full h-full border-0 grayscale opacity-80 hover:grayscale-0 hover:opacity-100 transition-all duration-500"
+                            allowFullScreen="" 
+                            loading="lazy" 
+                            referrerPolicy="no-referrer-when-downgrade">
+                        </iframe>
+                    </div>
+                </div>
+                <div className="text-center text-gray-600 text-sm">
+                    <p>&copy; 2024 燭點 Candle Point. All Rights Reserved. (課堂作業專案)</p>
+                </div>
+            </footer>
+        );
+
+        // --- 主應用 ---
+        const App = () => {
+            return (
+                <div className="min-h-screen">
+                    <Navbar />
+                    <Hero />
+                    <About />
+                    <Menu />
+                    <Gallery />
+                    <Reservation />
+                    <Footer />
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
